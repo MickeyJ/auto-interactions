@@ -21,11 +21,13 @@
     const interactions = [
         {
             name: 'Dropdown Button',
+            skip: false,
+            wait: 0,
             find: {
                 in: null,
                 it(inElement = document.body){
-                    return findElement([
-                        byClassName('menu-button'),
+                    return helpers.findElement([
+                        helpers.byClassName('menu-button'),
                     ], inElement)
                 }
             },
@@ -36,23 +38,27 @@
         },
         {
             name: 'Dropdown Menu',
+            skip: false,
+            wait: 0,
             find: {
                 in: null,
                 it(inElement = document.body){
-                    return findElement([
-                        byClassName('menu__list zap-menu__list')
+                    return helpers.findElement([
+                        helpers.byClassName('menu__list zap-menu__list')
                     ], inElement)
                 },
             },
         },
         {
             name: 'Run button',
+            skip: false,
+            wait: 0,
             find: {
                 in: 'previousElement',
                 it(inElement = document.body){
-                    return findElement([
-                        byClassName('truncated-text truncated-text--block menu__label-text'),
-                        byInnerText('Run')
+                    return helpers.findElement([
+                        helpers.byClassName('truncated-text truncated-text--block menu__label-text'),
+                        helpers.byInnerText('Run')
                     ], inElement)
                 },
             },
@@ -63,15 +69,16 @@
         },
         {
             name: 'Close Modal Button',
+            skip: false,
+            wait: 5000,
             find: {
                 in: null,
                 it(inElement = document.body){
-                    return findElement([
-                        byClassName('button button--large button--primary flat react-portal-modal__actions-button'),
+                    return helpers.findElement([
+                        helpers.byClassName('button button--large button--primary flat react-portal-modal__actions-button'),
                     ], inElement)
                 },
             },
-            wait: 5000,
             action(el){
                 el.click();
                 console.log('    - Clicked');
@@ -86,6 +93,8 @@
         let previousElement = null;
 
         for(const _do of interactions){
+
+            if(_do.skip) continue;
 
             if(_do.wait){
                 console.log(`  ... Waiting To Do Next Interaction: ${_do.wait}ms`);
@@ -140,48 +149,51 @@
         clearInterval(interactionInterval)
     }, clearIntervalTime);
 
+    const helpers = {
 
-    function byClassName(className){
-        return function(node){
-            if(node.className && node.className.indexOf){
-                if(node.className.indexOf(className) > -1){
-                    return true;
+        byClassName(className){
+            return function(node){
+                if(node.className && node.className.indexOf){
+                    if(node.className.indexOf(className) > -1){
+                        return true;
+                    }
                 }
+                return false
             }
-            return false
-        }
-    }
+        },
 
-    function byInnerText(text){
-        return function(node){
-            return node.innerText && node.innerText === text
-        }
-    }
-
-    function findElement(methods, searchNode = document.body){
-        let element = null;
-        searchDOM(searchNode, (node) => {
-            let found = 0;
-            for(const method of methods){
-                if(method(node)) found++;
+        byInnerText(text){
+            return function(node){
+                return node.innerText && node.innerText === text
             }
-            if(found === methods.length){
-                element = node;
-                return true
-            }
-            return false
-        });
-        return element;
-    }
+        },
 
-    function searchDOM (node, found) {
-        if(found(node)) return;
-        node = node.firstChild;
-        while(node) {
-            searchDOM(node, found);
-            node = node.nextSibling;
-        }
-    }
+        findElement(methods, searchNode = document.body){
+            let element = null;
+            helpers.searchDOM(searchNode, (node) => {
+                let found = 0;
+                for(const method of methods){
+                    if(method(node)) found++;
+                }
+                if(found === methods.length){
+                    element = node;
+                    return true
+                }
+                return false
+            });
+            return element;
+        },
+
+        searchDOM (node, found) {
+            if(found(node)) return;
+            node = node.firstChild;
+            while(node) {
+                helpers.searchDOM(node, found);
+                node = node.nextSibling;
+            }
+        },
+
+    };
 
     return true
 })();
